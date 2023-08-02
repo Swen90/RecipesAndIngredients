@@ -12,6 +12,5 @@ namespace RecipesAndIngredients.DTO
 
         public string? CategName { get; set; }
 
-        public List<RecipeDto> Recipes { get; set; } = new List<RecipeDto>();
     }
 }

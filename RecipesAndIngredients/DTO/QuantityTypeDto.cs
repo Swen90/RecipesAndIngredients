@@ -11,7 +11,5 @@ namespace RecipesAndIngredients.DTO
         public int Id { get; set; }
 
         public string? Quantity { get; set; }
-
-        public List<IngredientDto> Ingredients { get; set; } = new List<IngredientDto>();
     }
 }

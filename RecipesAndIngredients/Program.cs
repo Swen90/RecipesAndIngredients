@@ -1,4 +1,5 @@
 ﻿using System;
+using RecipesAndIngredients.Pages;
 
 
 
@@ -11,7 +12,13 @@ namespace RecipesAndIngredients
     {
         static void Main(string[] args)
         {
+            //IngredientPage ingPage = new IngredientPage();
 
+            //ingPage.IngredientsPage();
+
+            RecipePage recipePage = new RecipePage();
+
+            recipePage.RecipesPage();
         }
     }
 }

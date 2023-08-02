@@ -26,14 +26,32 @@ namespace RecipesAndIngredients
         }
 
 
+
+        public static QuantityTypeDto? ConvertToQuantityTypeDto(QuantityType quantityType)
+        {
+            QuantityTypeDto? quantityTypeDto = new QuantityTypeDto()
+            {
+                Id = quantityType.Id,
+                Quantity = quantityType.Quantity,
+            };
+            return quantityTypeDto;
+        }
+
+
+
         public static RecipeDto? ConvertToRecipeDto(Recipe recipe)
         {
             RecipeDto? recipeDto = new RecipeDto()
             {
                 Id = recipe.Id,
                 RecName = recipe.RecName,
-                Category = recipe.RecipeCategory,
+                Category = new RecipeCategoryDto
+                {
+                    Id = recipe.RecipeCategoryId.Value,  /// Когда ставлю знак ? добавляется новый функционал, где в свойстве Value хранится значение переменной
+                    CategName = recipe.RecipeCategory.CategName,
+                }
             };
+            return recipeDto;
         }
     }
 }

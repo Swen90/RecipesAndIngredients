@@ -25,7 +25,7 @@ namespace RecipesAndIngredients.Services
                 };
                 db.Ingredients.Add(ingredient);
                 db.SaveChanges();
-                Ingredient? newIngredient = Get(ingredient.Id);
+                Ingredient? newIngredient = GetById(ingredient.Id);
                 if (newIngredient == null)
                 {
                     return null;
@@ -40,7 +40,7 @@ namespace RecipesAndIngredients.Services
 
 
 
-        private Ingredient? Get(int Id)
+        private Ingredient? GetById(int Id)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
@@ -51,11 +51,23 @@ namespace RecipesAndIngredients.Services
 
 
 
-        public IngredientDto? GetDto(int Id)
+        public IngredientDto? GetByName(string name)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                Ingredient? ingredient = Get(Id);
+                Ingredient? ingredient = db.Ingredients.Include(p => p.QuantityType).Where(i => i.IngName == name).FirstOrDefault();
+                IngredientDto? ingredientDto = Utils.ConvertToIngredientDto(ingredient);
+                return ingredientDto;
+            }
+        }
+
+
+
+        public IngredientDto? GetByIdDto(int Id)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                Ingredient? ingredient = GetById(Id);
                 if (ingredient == null)
                 {
                     return null;
@@ -91,7 +103,7 @@ namespace RecipesAndIngredients.Services
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                Ingredient? ingredient = Get(Id);
+                Ingredient? ingredient = GetById(Id);
                 if(ingredient == null)
                 {
                     return;
@@ -102,7 +114,39 @@ namespace RecipesAndIngredients.Services
                     db.SaveChanges();
                 }
             }
+        }
 
+
+        public bool CheckExistance(int Id)
+        {
+            Ingredient? ingredient = GetById(Id);
+            if (ingredient == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+
+
+        public QuantityTypeDto? GetQuantityTypeById(int Id)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                QuantityType? quantityType = db.QuantityTypes.Where(i => i.Id == Id).FirstOrDefault();
+                if (quantityType == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    QuantityTypeDto? quantityTypeDto = Utils.ConvertToQuantityTypeDto(quantityType);
+                    return quantityTypeDto;
+                }
+            }
         }
     }
 }

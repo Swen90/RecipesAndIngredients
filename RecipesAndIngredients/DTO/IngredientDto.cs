@@ -14,6 +14,5 @@ namespace RecipesAndIngredients.DTO
 
         public QuantityTypeDto? QuantityType { get; set; } = new QuantityTypeDto();
 
-        public List<RecipeIngredientDto> RecipeIngredients { get; set; } = new List<RecipeIngredientDto>();
     }
 }

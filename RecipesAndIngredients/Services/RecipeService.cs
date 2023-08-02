@@ -11,6 +11,17 @@ namespace RecipesAndIngredients.Services
 {
     public class RecipeService
     {
+        private Recipe? Get(Guid Id)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                Recipe? recipe = db.Recipes.Include(c => c.RecipeCategory).Where(r => r.Id == Id)
+                    .SelectMany(s => s.RecipeIngredients.Select(m => m.Recipe)).Distinct().FirstOrDefault();
+                return recipe;
+            }
+        }
+
+
 
         public RecipeDto? GetDto(Guid Id)
         {
@@ -19,37 +30,61 @@ namespace RecipesAndIngredients.Services
                 Recipe? recipe = db.Recipes.Include(c => c.RecipeCategory).Where(r => r.Id == Id)
                     .SelectMany(s => s.RecipeIngredients.Select(m => m.Recipe)).Distinct().FirstOrDefault();
                 ///Distinct фильтрует дубликаты и оставляет только уникальные значения
-                
-                return recipe;
+                if (recipe == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    RecipeDto? recipeDto = Utils.ConvertToRecipeDto(recipe);
+                    return recipeDto;
+                }
             }
         }
 
 
-        public RecipeDto? AddRecipe(RecipeDto recipe)
+
+        public List<RecipeDto>? GetAll()
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
+                List<Recipe>? recipes = db.Recipes.Include(r => r.RecipeCategory).ToList();
+                List<RecipeDto>? recipesDto = new List<RecipeDto>();
+                foreach (Recipe recipe in recipes)
+                {
+                    RecipeDto? dto = Utils.ConvertToRecipeDto(recipe);
+                }
+                return recipesDto;
+            }
+        }
+
+
+        public void AddRecipe(RecipeDto recipeDto)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                RecipeIngredient? recipeIngredient = null;
                 Recipe newRecipe = new Recipe()
                 {
-                    Id = recipe.Id,
-                    RecName = recipe.RecName,
-                    RecipeCategoryId = recipe.Category.Id,
+                    Id = recipeDto.Id,
+                    RecName = recipeDto.RecName,
+                    RecipeCategoryId = recipeDto.Category.Id,
                 };
-                
-                foreach(RecipeIngredientDto recipeIngredientDto in recipe.Ingredients)
-                {
-                    RecipeIngredient recipeIngredient = new RecipeIngredient()
-                    {
-                        IngredientId = recipeIngredientDto.Ingredient.Id,
-                        QuantityCount = recipeIngredientDto.QuantityCount,
-                        RecipeId = recipe.Id,
-                    };
-                    newRecipe.RecipeIngredients.Add();
-                }
-            }
-        
-        
 
+                foreach (KeyValuePair<int, RecipeIngredientDto> recipeIngredientDto in recipeDto.Ingredients) /// тип данных dictionary
+                {
+                    recipeIngredient = new RecipeIngredient()
+                    {
+                        IngredientId = recipeIngredientDto.Key, /// в key находится Id ингредиента
+                        RecipeId = recipeDto.Id,
+                        QuantityCount = recipeIngredientDto.Value.QuantityCount, /// Value обращение к самому значению (второй столбец)
+                    };
+                    newRecipe.RecipeIngredients.Add(recipeIngredient); /// чтобы добавить информацию в БД связанную через FK
+                }
+                db.SaveChanges();
+                ///RecipeDto? newRecipeDto = Utils.ConvertToRecipeDto(newRecipe);
+                ///return newRecipeDto;
+            }
         }
     }
 }
