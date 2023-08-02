@@ -59,14 +59,16 @@ namespace RecipesAndIngredients.Services
         }
 
 
-        public void AddRecipe(RecipeDto recipeDto)
+        public Guid AddRecipe(RecipeDto recipeDto)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
                 RecipeIngredient? recipeIngredient = null;
+                Guid id = Guid.NewGuid(); /// из-за того что id генерируется на этапе метода SaveChanges, при связывании записи с таблицей RecipeIngredient нужно сгенерировать Id
+                                          /// Guid.NewGuid() - этот метод генерирует рандомный guid также как бы это делала SQL 
                 Recipe newRecipe = new Recipe()
                 {
-                    Id = recipeDto.Id,
+                    Id= id,
                     RecName = recipeDto.RecName,
                     RecipeCategoryId = recipeDto.Category.Id,
                 };
@@ -76,14 +78,17 @@ namespace RecipesAndIngredients.Services
                     recipeIngredient = new RecipeIngredient()
                     {
                         IngredientId = recipeIngredientDto.Key, /// в key находится Id ингредиента
-                        RecipeId = recipeDto.Id,
+                        RecipeId = id,
                         QuantityCount = recipeIngredientDto.Value.QuantityCount, /// Value обращение к самому значению (второй столбец)
                     };
-                    newRecipe.RecipeIngredients.Add(recipeIngredient); /// чтобы добавить информацию в БД связанную через FK
+                    newRecipe.RecipeIngredients.Add(recipeIngredient); /// чтобы добавить информацию в БД связанную через FK.
+                                                                       /// Важно: записи не добавятся пока е будет добавлена основная запись (в нашем случае рецепт)
+                                                                       /// Как определить какая запись основная - переменная до первой точки (newRecipe)
                 }
+                db.Recipes.Add(newRecipe); /// здесь добавится и основная запись рецепта и запись в связующую таблицу RecipeIngredient
                 db.SaveChanges();
-                ///RecipeDto? newRecipeDto = Utils.ConvertToRecipeDto(newRecipe);
-                ///return newRecipeDto;
+
+                return id; /// почему так отвечу на следующем занятии
             }
         }
     }
