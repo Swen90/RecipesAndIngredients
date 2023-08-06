@@ -14,6 +14,7 @@ namespace RecipesAndIngredients.Pages
     {
         public void RecipesPage()
         {
+            bool exit = false;
             RecipeService recipeService = new RecipeService();
             IngredientService ingredientService = new IngredientService();
             while (true)
@@ -42,14 +43,18 @@ namespace RecipesAndIngredients.Pages
                         GetRecipe(recipeService);
                         break;
                     case 5:
-                        ///RemoveRecipe(recipeService);
+                        RemoveRecipe(recipeService);
                         break;
                     case 6:
-                        /// bool для выхода из страницы
+                        exit = true;
                         break;
                     default:
                         Environment.Exit(0);
                         break;
+                }
+                if (exit == true)
+                {
+                    break;
                 }
             }
         }
@@ -69,18 +74,26 @@ namespace RecipesAndIngredients.Pages
 
         public static void GetRecipe(RecipeService recipeService)
         {
-            Console.WriteLine("");
-            string? input = Console.ReadLine();
-            if (string.IsNullOrEmpty(input))
+            Console.WriteLine("Введите название рецепта");
+            while (true)
             {
-                return;
-            }
-
-            switch(input)
-            {
-               
+                string? input = Console.ReadLine();
+                if (string.IsNullOrEmpty(input))
+                {
+                    Console.WriteLine("Неверный ввод");
+                    continue;
+                }
+                RecipeDto? recipeDto = recipeService.GetByNameDto(input);
+                if (recipeDto == null)
+                {
+                    Console.WriteLine("Рецепт не существует");
+                }
+                Console.WriteLine($"RecipeName - {recipeDto.RecName}, RecipeCategory - {recipeDto.Category}, Ingredients - {recipeDto.Ingredients.Values}, " +
+                    $"IngredientCount - {recipeDto.Ingredients}");///// ????????? перебрать foreach обратиться к values чтобы получить доступ к ингред-там
+                /// внутри foreach еще CW выставлять ingname and quantitytype
             }
         }
+
 
 
         public static void AddNewRecipe(RecipeService recipeService, IngredientService ingredientService)
@@ -139,6 +152,33 @@ namespace RecipesAndIngredients.Pages
             };
             recipeService.AddRecipe(recipeDto);
 
+        }
+
+
+
+        public static void RemoveRecipe(RecipeService recipeService)
+        {
+            Console.WriteLine("Введите название рецепта");
+            while (true)
+            {
+                string? input = Console.ReadLine();
+                if (string.IsNullOrEmpty(input))
+                {
+                    Console.WriteLine("Неверный ввод");
+                    continue;
+                }
+                bool isExisted = recipeService.CheckExistance(input);
+                if (isExisted == false)
+                {
+                    Console.WriteLine("Отмена удаления");
+                }
+                else
+                {
+                    recipeService.Remove(input);
+                    Console.WriteLine("Ингредиент успешно удален");
+                }
+                break;
+            }
         }
     }  
 }

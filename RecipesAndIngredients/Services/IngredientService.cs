@@ -58,6 +58,7 @@ namespace RecipesAndIngredients.Services
                 Ingredient? ingredient = db.Ingredients.Include(p => p.QuantityType).Where(i => i.IngName == name).FirstOrDefault();
                 IngredientDto? ingredientDto = Utils.ConvertToIngredientDto(ingredient);
                 return ingredientDto;
+                
             }
         }
 
