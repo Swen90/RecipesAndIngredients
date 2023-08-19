@@ -14,6 +14,6 @@ namespace RecipesAndIngredients.DTO
 
         public RecipeCategoryDto? Category { get; set; } = new RecipeCategoryDto();
 
-        public Dictionary<int, RecipeIngredientDto> Ingredients { get; set; } = new Dictionary<int, RecipeIngredientDto>();
+        public Dictionary<int, IngredientAndQuantityDto> Ingredients { get; set; } = new Dictionary<int, IngredientAndQuantityDto>();
     }
 }

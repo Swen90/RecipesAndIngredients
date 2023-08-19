@@ -19,7 +19,7 @@ namespace RecipesAndIngredients
                 QuantityType = new QuantityTypeDto
                 {
                     Id = ingredient.QuantityType.Id,
-                    Quantity = ingredient.QuantityType.Quantity,
+                    Name = ingredient.QuantityType.Quantity,
                 }
             };
             return ingredientDto;
@@ -32,7 +32,7 @@ namespace RecipesAndIngredients
             QuantityTypeDto? quantityTypeDto = new QuantityTypeDto()
             {
                 Id = quantityType.Id,
-                Quantity = quantityType.Quantity,
+                Name = quantityType.Quantity,
             };
             return quantityTypeDto;
         }
@@ -52,6 +52,18 @@ namespace RecipesAndIngredients
                 }
             };
             return recipeDto;
+        }
+
+
+
+        public static RecipeCategoryDto ConvertToRecipeCategoryDto(RecipeCategory recipeCategory)
+        {
+            RecipeCategoryDto categoryDto = new RecipeCategoryDto()
+            {
+                Id = recipeCategory.Id,
+                CategName = recipeCategory.CategName,
+            };
+            return categoryDto;
         }
     }
 }

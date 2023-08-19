@@ -18,19 +18,20 @@ namespace RecipesAndIngredients.Services
                 Recipe? recipe = db.Recipes.Include(c => c.RecipeCategory).Where(r => r.Id == Id)
                     .SelectMany(s => s.RecipeIngredients.Select(m => m.Recipe)).Distinct().FirstOrDefault();
                 return recipe; 
-            } //// использовать для метода ниже
+            }
         }
 
 
 
         public RecipeDto? GetDto(Guid Id)
         {
-            ///if ( Id == Guid.Empty);   /// Guid.Empty возвращает нулевое значение в виде 00000000-000-0000-0000000
-            ///return null;
+            if ( Id == Guid.Empty) /// Guid.Empty возвращает нулевое значение в виде 00000000-000-0000-0000000
+            {
+                return null;
+            }   
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                Recipe? recipe = db.Recipes.Include(c => c.RecipeCategory).Where(r => r.Id == Id)
-                    .SelectMany(s => s.RecipeIngredients.Select(m => m.Recipe)).Distinct().FirstOrDefault();
+                Recipe? recipe = Get(Id);
                 ///Distinct фильтрует дубликаты и оставляет только уникальные значения
                 if (recipe == null)
                 {
@@ -66,7 +67,6 @@ namespace RecipesAndIngredients.Services
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                RecipeIngredient? recipeIngredient = null;
                 Guid id = Guid.NewGuid(); /// из-за того что id генерируется на этапе метода SaveChanges, при связывании записи с таблицей RecipeIngredient нужно сгенерировать Id
                                           /// Guid.NewGuid() - этот метод генерирует рандомный guid также как бы это делала SQL 
                 Recipe newRecipe = new Recipe()
@@ -76,9 +76,9 @@ namespace RecipesAndIngredients.Services
                     RecipeCategoryId = recipeDto.Category.Id,
                 };
 
-                foreach (KeyValuePair<int, RecipeIngredientDto> recipeIngredientDto in recipeDto.Ingredients) /// тип данных dictionary
+                foreach (KeyValuePair<int, IngredientAndQuantityDto> recipeIngredientDto in recipeDto.Ingredients) /// тип данных dictionary
                 {
-                    recipeIngredient = new RecipeIngredient()
+                    RecipeIngredient recipeIngredient = new RecipeIngredient()
                     {
                         IngredientId = recipeIngredientDto.Key, /// в key находится Id ингредиента
                         RecipeId = id,
@@ -97,41 +97,60 @@ namespace RecipesAndIngredients.Services
 
 
 
-        public bool UpdateRecipe(RecipeDto recipeDto, string name)
-        {
-            Recipe? recipe = GetByName(name);
-            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
-            {
-                recipe.RecName = recipeDto.RecName;
-                recipe.RecipeCategoryId = recipeDto.Category.Id;
+        //public bool UpdateRecipe(RecipeDto recipeDto, string name, Dictionary<int, CommandEnum> keyValues)
+        //{
+        //    RecipeIngredient? recipe = GetByName(name);
+        //    using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+        //    {
+        //        recipe.RecName = recipeDto.RecName;
+        //        recipe.RecipeCategoryId = recipeDto.Category.Id;
+        //        Guid recipeId = recipe.Id;
+        //        RecipeDto recipeDto1 = new RecipeDto()
+        //        {
 
-                foreach (KeyValuePair<int, RecipeIngredientDto> recipeIngredientDto in recipeDto.Ingredients) /// тип данных dictionary
-                {
+        //        };
 
-                    RecipeIngredient recipeIngredient = recipe.RecipeIngredients.Where(); 
-                    {
-                        IngredientId = recipeIngredientDto.Key, /// в key находится Id ингредиента
-                        QuantityCount = recipeIngredientDto.Value.QuantityCount, /// Value обращение к самому значению (второй столбец)
-                    };
-                    newRecipe.RecipeIngredients.Add(recipeIngredient); /// чтобы добавить информацию в БД связанную через FK.
-                                                                       /// Важно: записи не добавятся пока не будет добавлена основная запись (в нашем случае рецепт)
-                                                                       /// Как определить какая запись основная - переменная до первой точки (newRecipe)
-                }
-                db.Recipes.Add(newRecipe); /// здесь добавится и основная запись рецепта и запись в связующую таблицу RecipeIngredient
-                db.SaveChanges();
+        //        foreach (KeyValuePair<int, RecipeIngredientDto> recipeIngredientDto in recipeDto.Ingredients) /// тип данных dictionary
+        //        {
 
-                return id; /// почему так отвечу на следующем занятии
-            }
-        }
+        //            RecipeIngredient recipeIngredient = recipe.RecipeIngredients.Where((r => r.IngredientId == ingredientId && r.RecipeId == recipeId)); 
+        //            {
+        //                IngredientId = recipeIngredientDto.Key, /// в key находится Id ингредиента
+        //                QuantityCount = recipeIngredientDto.Value.QuantityCount, /// Value обращение к самому значению (второй столбец)
+        //            };
+        //                                                               /// чтобы добавить информацию в БД связанную через FK.
+        //                                                               /// Важно: записи не добавятся пока не будет добавлена основная запись (в нашем случае рецепт)
+        //                                                               /// Как определить какая запись основная - переменная до первой точки (newRecipe)
+        //        }
+        //        switch (keyValues)
+        //        {
+        //            case Dictionary<int, CommandEnum> edit:
+
+        //                break;
+        //            case Dictionary<int, CommandEnum> add:
+
+        //                break;
+        //            case Dictionary<int, CommandEnum> delete:
+
+        //                break;
+        //        }
+        //        db.Update(recipe); 
+        //        var isUpdated = db.Recipes != null;
+        //        db.SaveChanges();
+
+        //        return true;
+        //    }
+        //}
 
 
         private Recipe? GetByName(string name)
         {
-            /// проверку на if null - return null
+            if (string.IsNullOrEmpty(name)) 
+                return null;
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
                 Recipe? recipe = db.Recipes.Include(p => p.RecipeCategory).Include(o => o.RecipeIngredients).Where(i => i.RecName == name).FirstOrDefault();
-                return recipe; ///////////// дописать
+                return recipe; 
             }
         }
 
@@ -139,13 +158,33 @@ namespace RecipesAndIngredients.Services
 
         public RecipeDto? GetByNameDto(string name)
         {
-            /// проверку на name if null - return null
+            if (string.IsNullOrEmpty(name))
+                return null;
             Recipe? recipe = GetByName(name);
-            /// if null return null
+            if (recipe == null)
+            {
+                return null;
+            }
             RecipeDto? recipeDto = Utils.ConvertToRecipeDto(recipe);
-            return recipeDto; ///////////// дописать
+            return recipeDto;
         }
 
+
+
+        public List<RecipeCategoryDto> GetAllCategory()
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                List<RecipeCategoryDto> recipeCategoryDtos = new List<RecipeCategoryDto>();
+                List<RecipeCategory> recipeCategories = db.RecipeCategories.ToList();
+                foreach (RecipeCategory category in recipeCategories)
+                {
+                    RecipeCategoryDto recipeCategoryDto = Utils.ConvertToRecipeCategoryDto(category);
+                    recipeCategoryDtos.Add(recipeCategoryDto);
+                }
+                return recipeCategoryDtos;
+            }
+        }
 
 
         public bool CheckExistance(string name)

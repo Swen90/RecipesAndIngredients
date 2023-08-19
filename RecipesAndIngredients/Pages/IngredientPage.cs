@@ -1,4 +1,5 @@
 ﻿using RecipesAndIngredients.DTO;
+using RecipesAndIngredients.Models;
 using RecipesAndIngredients.Services;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace RecipesAndIngredients.Pages
                         AddNewIngredient(ingredientService);
                         break;
                     case 3:
-                        ///EditIngredient(ingredientService);
+                        EditIngredient(ingredientService);
                         break;
                     case 4:
                         GetIngredient(ingredientService);
@@ -63,6 +64,10 @@ namespace RecipesAndIngredients.Pages
         {
             Console.WriteLine("Список ингредиентов");
             List<IngredientDto>? ingredientsDto = ingredientService.GetAll();
+            if(ingredientsDto == null)
+            {
+                Console.WriteLine("Список не найден");
+            }
             /// переделать проверку на   List<IngredientDto>? ingredientsDto
 
             foreach (IngredientDto ingredientDto1 in ingredientsDto)
@@ -74,7 +79,7 @@ namespace RecipesAndIngredients.Pages
                 else
                 {
                     Console.WriteLine($"Id = {ingredientDto1.Id}, IngredientName = {ingredientDto1.IngName}," +
-                        $" QuantityType = {ingredientDto1.QuantityType.Quantity}");
+                        $" QuantityType = {ingredientDto1.QuantityType.Name}");
                 }
                 ///break;     ???????????
             }
@@ -93,7 +98,7 @@ namespace RecipesAndIngredients.Pages
                     Console.WriteLine("Неверный ввод");
                     continue;             
                 }
-                IngredientDto? ingredientDto = ingredientService.GetByName(ing);
+                IngredientDto? ingredientDto = ingredientService.GetByNameDto(ing);
                 if (ingredientDto == null)
                 {
                     Console.WriteLine("Ингредиент не найден");
@@ -149,9 +154,85 @@ namespace RecipesAndIngredients.Pages
             };
             IngredientDto? ingredientDto1 = ingredientService.Add(ingredientDto);
             Console.WriteLine("Добавлен новый ингредиент");
-            Console.WriteLine($"Name - {input}, QuantityType - {ingredientDto.QuantityType.Quantity}");
+            Console.WriteLine($"Name - {input}, QuantityType - {ingredientDto.QuantityType.Name}");
         }
 
+
+
+
+        public void EditIngredient(IngredientService ingredientService)
+        {
+            IngredientDto? ingredientDto = new IngredientDto();
+            Console.WriteLine("Редактирование информации об ингредиенте");
+            while(true)
+            {
+                Console.WriteLine("Введите Id ингредиента");
+                string? input = Console.ReadLine();
+                if( string.IsNullOrEmpty(input) )
+                {
+                    Console.WriteLine("Неверный ввод");
+                    continue;
+                }
+                ingredientDto = ingredientService.GetByNameDto(input);
+                if( ingredientDto == null )
+                {
+                    Console.WriteLine("Ингредиент не найден");
+                    continue;
+                }
+                break;
+            }
+            while (true)
+            {
+                Console.WriteLine("1 - Редактировать название");
+                Console.WriteLine("2 - Редактировать тип исчисления");
+                string? input2 = Console.ReadLine();
+                if (string.IsNullOrEmpty(input2))
+                {
+                    Console.WriteLine("Неверный ввод");
+                    continue;
+                }
+                int inpuy2Conv = Convert.ToInt32(input2);
+                switch (inpuy2Conv)
+                {
+                    case 1:
+                        while (true)
+                        {
+                            string? ingName = Console.ReadLine();
+                            if (string.IsNullOrEmpty(ingName))
+                            {
+                                Console.WriteLine("Некорректный ввод");
+                                continue;
+                            }
+                            ingredientDto.IngName = ingName != null ? ingredientDto.IngName : ingName;
+                            break;
+                        }
+                        break;
+                    case 2:
+                        while (true)
+                        {
+                            string? quantityType = Console.ReadLine();
+                            if (string.IsNullOrEmpty(quantityType))
+                            {
+                                Console.WriteLine("Некорректный ввод");
+                                continue;
+                            }
+                            ingredientDto.QuantityType.Name = quantityType != null ? ingredientDto.QuantityType.Name : quantityType;
+                            break;
+                        }
+                        break;
+                }
+                break;
+            }
+            bool editValid = ingredientService.Edit(ingredientDto);
+            if (editValid == false)
+            {
+                Console.WriteLine("Редактирование отменено");
+            }
+            else
+            {
+                Console.WriteLine("Данные успешно сохранены");
+            }
+        }
 
 
         public static void RemoveIngredient(IngredientService ingredientService)

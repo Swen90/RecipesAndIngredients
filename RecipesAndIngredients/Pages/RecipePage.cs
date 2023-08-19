@@ -3,8 +3,10 @@ using RecipesAndIngredients.DTO;
 using RecipesAndIngredients.Models;
 using RecipesAndIngredients.Services;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -98,60 +100,99 @@ namespace RecipesAndIngredients.Pages
 
         public static void AddNewRecipe(RecipeService recipeService, IngredientService ingredientService)
         {
-            Dictionary<int, RecipeIngredientDto> ingredients = new Dictionary<int, RecipeIngredientDto>();
-
+            Dictionary<int, IngredientAndQuantityDto> ingredients = new Dictionary<int, IngredientAndQuantityDto>();
+            RecipeDto recipeDto = new RecipeDto();
             Console.WriteLine("Создание нового рецепта");
-            
             while (true)
             {
-                Console.WriteLine("Введите название ингредиента");
-                string? input = Console.ReadLine();
-                if (string.IsNullOrEmpty(input))
+                Console.WriteLine("Введите название рецепта");
+                string? inp = Console.ReadLine();
+                if (string.IsNullOrEmpty(inp))
                 {
                     Console.WriteLine("Неверный формат ввода");
                     continue;
                 }
-                IngredientDto? ingredient = ingredientService.GetByName(input);
-                if (ingredient == null)
-                {
-                    Console.WriteLine("Ингредиент не найден");
-                    continue;
-                }
-                else
-                {
-                    /// запросить через консоль quantitycount
-                    
-                    ingredients.Add(ingredient.Id, new RecipeIngredientDto() {Ingredient = ingredient, QuantityCount = 50});
-                }
-                Console.WriteLine("Хотите добавить еще ингредиент?");
-                Console.WriteLine("Введите '1' чтобы добавить ингредиент. Введите любую другую цифру чтобы закончить");
-                string? key = Console.ReadLine();
-                if (string.IsNullOrEmpty(key))
-                {
-                    break;
-                }
-                int key1 = Convert.ToInt32(key);
-                if (key1 == 1)
-                {
-                    continue;
-                }
-                else
-                {
-                    break;
-                }
+                recipeDto.RecName = inp;
+                break;
             }
-            RecipeDto? recipeDto = new RecipeDto()
+            Console.WriteLine("Выберите одну из категорий блюда");
+            List<RecipeCategoryDto> categoryList = recipeService.GetAllCategory();
+            int countCategory = categoryList.Count;  /// .Count возвращает число записей списка
+            for (int i = 1; i <= countCategory; i++)
             {
-                RecName = "Борщ",
-                Category = new RecipeCategoryDto()
+                Console.WriteLine($"{i} - {categoryList[i - 1].CategName}");   /// [] позволяют обращаться по индексу (количество строк)
+                    /// обращаясь по индексу порядок начинается с 0, поэтому указываем i - 1  
+            }
+            while (true)
+            {
+                Console.WriteLine("Введите цифру категории");
+                string? input  = Console.ReadLine();
+                if (string.IsNullOrEmpty(input))
                 {
-                    Id = 1,
-                    CategName = "Первое блюдо",
-                },
-                Ingredients = ingredients
-            };
-            recipeService.AddRecipe(recipeDto);
+                    Console.WriteLine("Неверный ввод");
+                    continue;
+                }
+                int inputConv = Convert.ToInt32(input);
+                if (inputConv > countCategory)
+                {
+                    Console.WriteLine("Неверная цифра");
+                    continue;
+                }
+                ///RecipeCategoryDto recipeCategoryDto = categoryList[inputConv - 1];
+                RecipeCategoryDto recipeCategoryDto = categoryList.ElementAt(inputConv - 1); /// ElementAt позволяет обратиться к выбранной записи по индексу(аналог предыдущей строчки)
 
+                recipeDto.Category = recipeCategoryDto;
+                break;
+            }
+
+            while (true)
+            {
+                Console.WriteLine("Введите название ингредиента");
+                string? inp = Console.ReadLine();
+                if (string.IsNullOrEmpty(inp))
+                {
+                    Console.WriteLine("Неверный формат ввода");
+                    continue;
+                }
+                bool check = ingredientService.CheckExistanceByName(inp);
+                if (check == false)
+                {
+                    continue;
+                }
+                IngredientDto? ingredientDto = ingredientService.GetByNameDto(inp);
+
+                Console.WriteLine($"Введите количество ингредиента ({ingredientDto.QuantityType.Name})");
+                string? input = Console.ReadLine();
+                if (string.IsNullOrEmpty(input))
+                {
+                    Console.WriteLine("Неверный ввод количества");
+                    continue;
+                }
+                int quantity = Convert.ToInt32(input);
+
+                IngredientAndQuantityDto ingredientAndQuantityDto = new IngredientAndQuantityDto()
+                {
+                    QuantityCount = quantity,
+                    Ingredient = ingredientDto,
+                };
+                ingredients.Add(ingredientDto.Id, ingredientAndQuantityDto);
+                Console.WriteLine("Желаете ли продолжить добавление ингредиента?");
+                Console.WriteLine("Да - Y   Нет - N");
+                ConsoleKey key = Console.ReadKey().Key;
+                if (key == ConsoleKey.Y)
+                {
+                    continue;
+                }
+                recipeDto.Ingredients = ingredients;
+                break;
+            }
+            recipeService.AddRecipe(recipeDto);
+            Console.WriteLine("Создан новый рецепт");
+            Console.WriteLine($"{recipeDto.RecName}, {recipeDto.Category.CategName}: ");
+            foreach(var ingredient in ingredients)
+            {
+                Console.WriteLine($"{ingredient.Value.Ingredient.IngName} - {ingredient.Value.QuantityCount}, {ingredient.Value.Ingredient.QuantityType.Name}");
+            }
         }
 
 

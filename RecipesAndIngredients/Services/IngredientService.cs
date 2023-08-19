@@ -51,14 +51,24 @@ namespace RecipesAndIngredients.Services
 
 
 
-        public IngredientDto? GetByName(string name)
+        public IngredientDto? GetByNameDto(string name)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
                 Ingredient? ingredient = db.Ingredients.Include(p => p.QuantityType).Where(i => i.IngName == name).FirstOrDefault();
                 IngredientDto? ingredientDto = Utils.ConvertToIngredientDto(ingredient);
                 return ingredientDto;
-                
+            }
+        }
+
+
+
+        private Ingredient? GetByName(string name)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                Ingredient? ingredient = db.Ingredients.Include(p => p.QuantityType).Where(i => i.IngName == name).FirstOrDefault();
+                return ingredient;
             }
         }
 
@@ -100,6 +110,25 @@ namespace RecipesAndIngredients.Services
 
 
 
+        public bool Edit(IngredientDto ingredientDto)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                Ingredient? ingredient = GetById(ingredientDto.Id);
+                if (ingredient != null)
+                {
+                    ingredient.Id = ingredientDto.Id;
+                    ingredient.IngName = ingredientDto.IngName;
+                    ingredient.QuantityTypeId = ingredientDto.QuantityType.Id;
+                    ingredient.QuantityType.Quantity = ingredientDto.QuantityType.Name;
+                    db.SaveChanges();
+                    return true;
+                }
+                return false; //// показать
+            }
+        }
+
+
         public void Remove(int Id)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
@@ -131,6 +160,20 @@ namespace RecipesAndIngredients.Services
             }
         }
 
+
+
+        public bool CheckExistanceByName(string name)
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                Ingredient? ingredient = GetByName(name);
+                if (ingredient == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
 
 
         public QuantityTypeDto? GetQuantityTypeById(int Id)
