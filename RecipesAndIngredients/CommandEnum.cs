@@ -8,8 +8,8 @@ namespace RecipesAndIngredients
 {
     public enum CommandEnum
     {
-        Edit,
         Add,
+        Edit,
         Delete,
     }
 }

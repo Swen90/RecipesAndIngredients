@@ -114,19 +114,20 @@ namespace RecipesAndIngredients.Services
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                Ingredient? ingredient = GetById(ingredientDto.Id);
+                Ingredient? ingredient = db.Ingredients.Where(i => i.Id == ingredientDto.Id).FirstOrDefault();
                 if (ingredient != null)
                 {
                     ingredient.Id = ingredientDto.Id;
                     ingredient.IngName = ingredientDto.IngName;
                     ingredient.QuantityTypeId = ingredientDto.QuantityType.Id;
-                    ingredient.QuantityType.Quantity = ingredientDto.QuantityType.Name;
+                    db.Update(ingredient);
                     db.SaveChanges();
                     return true;
                 }
-                return false; //// показать
+                return false;
             }
         }
+
 
 
         public void Remove(int Id)
@@ -176,6 +177,7 @@ namespace RecipesAndIngredients.Services
         }
 
 
+
         public QuantityTypeDto? GetQuantityTypeById(int Id)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
@@ -191,6 +193,32 @@ namespace RecipesAndIngredients.Services
                     return quantityTypeDto;
                 }
             }
+        }
+
+
+
+        public List<QuantityTypeDto>? GetAllQuantityTypes()
+        {
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                List<QuantityTypeDto>? quantityTypeDtos = new List<QuantityTypeDto>();
+                QuantityTypeDto? quantityTypeDto = new QuantityTypeDto();
+                List<QuantityType>? quantityTypes = db.QuantityTypes.ToList();
+                if (quantityTypes == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    foreach (QuantityType quantityType in quantityTypes)
+                    {
+                        quantityTypeDto = Utils.ConvertToQuantityTypeDto(quantityType);
+                        quantityTypeDtos.Add(quantityTypeDto);
+                    }
+                    return quantityTypeDtos;
+                }
+            }
+
         }
     }
 }

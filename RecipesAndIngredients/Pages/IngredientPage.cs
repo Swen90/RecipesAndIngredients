@@ -26,6 +26,11 @@ namespace RecipesAndIngredients.Pages
                 Console.WriteLine("5 - Удаление ингредиента");
                 Console.WriteLine("6 - Вернуться на главную страницу");
                 string? input = Console.ReadLine();
+                if (string.IsNullOrEmpty(input))
+                {
+                    Console.WriteLine("Ошибка ввода");
+                    continue;
+                }
                 int key = Convert.ToInt32(input);
                 switch (key)
                 {
@@ -68,20 +73,11 @@ namespace RecipesAndIngredients.Pages
             {
                 Console.WriteLine("Список не найден");
             }
-            /// переделать проверку на   List<IngredientDto>? ingredientsDto
 
             foreach (IngredientDto ingredientDto1 in ingredientsDto)
             {
-                if (ingredientDto1 == null) //// ??????
-                {
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine($"Id = {ingredientDto1.Id}, IngredientName = {ingredientDto1.IngName}," +
-                        $" QuantityType = {ingredientDto1.QuantityType.Name}");
-                }
-                ///break;     ???????????
+                    Console.WriteLine($"Id = {ingredientDto1.Id}  \tIngredientName = {ingredientDto1.IngName}" +
+                        $"\t\t QuantityType = {ingredientDto1.QuantityType.Name}"); /// break не нужен, перебрал и закончил
             }
         }
 
@@ -105,15 +101,15 @@ namespace RecipesAndIngredients.Pages
                 }
                 Console.WriteLine($"IngredientName - {ingredientDto}");
             }
-
         }
+
 
 
         public static void AddNewIngredient(IngredientService ingredientService)
         {
-            QuantityTypeDto? quantityDto = null;
+            QuantityTypeDto? quantityDto; /// знак ? уже дает понятие что здесь лежит null
             string? input;
-            int input2;
+            int input1Conv;
             Console.WriteLine("Добавление ингредиента");
             while (true)
             {
@@ -131,7 +127,7 @@ namespace RecipesAndIngredients.Pages
             }
             while (true)
             {
-                Console.WriteLine("Выберите тип исчисления: 1 - Кг, 2 - Шт");
+                Console.WriteLine("Выберите тип исчисления: 1 - Г, 2 - Шт");
                 string? input1 = Console.ReadLine();
                 if( string.IsNullOrEmpty(input1) )
                 {
@@ -140,23 +136,21 @@ namespace RecipesAndIngredients.Pages
                 }
                 else
                 {
-                    input2 = Convert.ToInt32(input1);
+                    input1Conv = Convert.ToInt32(input1);
                     break;
                 }
             }
-
-            quantityDto = ingredientService.GetQuantityTypeById(input2);
+            quantityDto = ingredientService.GetQuantityTypeById(input1Conv);
 
             IngredientDto? ingredientDto = new IngredientDto()
             {
                 IngName = input,
                 QuantityType = quantityDto,
             };
-            IngredientDto? ingredientDto1 = ingredientService.Add(ingredientDto);
+            ingredientService.Add(ingredientDto);
             Console.WriteLine("Добавлен новый ингредиент");
-            Console.WriteLine($"Name - {input}, QuantityType - {ingredientDto.QuantityType.Name}");
+            Console.WriteLine($"Name - {ingredientDto.IngName}, QuantityType - {ingredientDto.QuantityType.Name}");
         }
-
 
 
 
@@ -166,18 +160,22 @@ namespace RecipesAndIngredients.Pages
             Console.WriteLine("Редактирование информации об ингредиенте");
             while(true)
             {
-                Console.WriteLine("Введите Id ингредиента");
+                Console.WriteLine("Введите название ингредиента");
                 string? input = Console.ReadLine();
                 if( string.IsNullOrEmpty(input) )
                 {
                     Console.WriteLine("Неверный ввод");
                     continue;
                 }
-                ingredientDto = ingredientService.GetByNameDto(input);
-                if( ingredientDto == null )
+                bool check = ingredientService.CheckExistanceByName(input);
+                if(check == false)
                 {
-                    Console.WriteLine("Ингредиент не найден");
+                    Console.WriteLine($"Ингредиент с названием {input} не существует");
                     continue;
+                }
+                else
+                {
+                    ingredientDto = ingredientService.GetByNameDto(input);
                 }
                 break;
             }
@@ -197,26 +195,37 @@ namespace RecipesAndIngredients.Pages
                     case 1:
                         while (true)
                         {
+                            Console.WriteLine("Введите новое название для ингредиента");
                             string? ingName = Console.ReadLine();
                             if (string.IsNullOrEmpty(ingName))
                             {
                                 Console.WriteLine("Некорректный ввод");
                                 continue;
                             }
-                            ingredientDto.IngName = ingName != null ? ingredientDto.IngName : ingName;
+                            ingredientDto.IngName = ingName == null ? ingredientDto.IngName : ingName;
                             break;
                         }
                         break;
                     case 2:
                         while (true)
                         {
-                            string? quantityType = Console.ReadLine();
-                            if (string.IsNullOrEmpty(quantityType))
+                            Console.WriteLine("Выберите тип исчисления");
+                            List<QuantityTypeDto>? quantityTypeList = ingredientService.GetAllQuantityTypes();
+                            int count = quantityTypeList.Count;
+                            for (int i = 1; i <= count; i++)
+                            {
+                                Console.WriteLine($"{i} - {quantityTypeList[i-1].Name}");
+                            }
+                            string? type = Console.ReadLine();
+                            if (string.IsNullOrEmpty(type))
                             {
                                 Console.WriteLine("Некорректный ввод");
                                 continue;
                             }
-                            ingredientDto.QuantityType.Name = quantityType != null ? ingredientDto.QuantityType.Name : quantityType;
+                            int typeConvert = Convert.ToInt32(type);
+                            ingredientDto.QuantityType.Id = quantityTypeList[typeConvert - 1].Id;
+
+                            ingredientDto.QuantityType.Name = quantityTypeList[typeConvert - 1].Name;
                             break;
                         }
                         break;
@@ -235,9 +244,10 @@ namespace RecipesAndIngredients.Pages
         }
 
 
+
         public static void RemoveIngredient(IngredientService ingredientService)
         {
-            Console.WriteLine("Введите Id ингредиента");
+            Console.WriteLine("Введите Id ингредиента"); /// сделать поиск ингредиента по name
             while(true)
             {
                 string? input = Console.ReadLine();

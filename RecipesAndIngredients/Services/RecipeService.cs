@@ -161,7 +161,7 @@ namespace RecipesAndIngredients.Services
             if (string.IsNullOrEmpty(name))
                 return null;
             Recipe? recipe = GetByName(name);
-            if (recipe == null)
+            if (recipe == null)  /// снова лишняя проверка ???
             {
                 return null;
             }
@@ -187,7 +187,7 @@ namespace RecipesAndIngredients.Services
         }
 
 
-        public bool CheckExistance(string name)
+        public bool CheckExistanceByName(string name)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {

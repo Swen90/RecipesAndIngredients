@@ -65,5 +65,35 @@ namespace RecipesAndIngredients
             };
             return categoryDto;
         }
+
+
+
+        public static string GetAndValidateNullString(string? title)
+        {
+            while (true)
+            {
+                if (string.IsNullOrWhiteSpace(title) == false)  /// оператор сравнения bool внутри условия на проверку null
+                {
+                    Console.WriteLine(title);
+                }
+                string? input = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(input) == true)  /// то же самое что без bool == true
+                {
+                    Console.WriteLine("Неверный ввод");
+                    continue;
+                }
+                return input;
+            }
+        }
+
+
+
+        public static int GetAndValidateNullInt(string? title = null) /// название метода то что отдает(желательно точнее и короче), не писать промежуточные процессы
+            /// если в параметре идет присвоение через = то это означает что будет приниматься дефолтное значение для метода 
+        {
+            int convertInput = Convert.ToInt32(GetAndValidateNullString(title));
+            /// int convertInput = int.Parse(GetAndValidateNullString(title)); то же самое
+            return convertInput;
+        }
     }
 }

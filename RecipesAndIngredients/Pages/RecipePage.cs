@@ -1,4 +1,5 @@
-﻿using Microsoft.Identity.Client;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Microsoft.Identity.Client;
 using RecipesAndIngredients.DTO;
 using RecipesAndIngredients.Models;
 using RecipesAndIngredients.Services;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace RecipesAndIngredients.Pages
 {
-    public class RecipePage
+    public partial class RecipePage
     {
         public void RecipesPage()
         {
@@ -39,7 +40,7 @@ namespace RecipesAndIngredients.Pages
                         AddNewRecipe(recipeService, ingredientService);
                         break;
                     case 3:
-                        ///EditRecipe(recipeService);
+                        EditRecipe(recipeService, ingredientService);
                         break;
                     case 4:
                         GetRecipe(recipeService);
@@ -70,8 +71,9 @@ namespace RecipesAndIngredients.Pages
             foreach(RecipeDto recipeDto in recipesDto)
             {
                 Console.WriteLine($"Id = {recipeDto.Id}, RecipeName = {recipeDto.RecName}, Category = {recipeDto.Category.CategName}");
-            }
+            } /// такой же вопрос как ниже
         }
+
 
 
         public static void GetRecipe(RecipeService recipeService)
@@ -85,14 +87,20 @@ namespace RecipesAndIngredients.Pages
                     Console.WriteLine("Неверный ввод");
                     continue;
                 }
-                RecipeDto? recipeDto = recipeService.GetByNameDto(input);
+                RecipeDto? recipeDto = recipeService.GetByNameDto(input); 
                 if (recipeDto == null)
                 {
                     Console.WriteLine("Рецепт не существует");
                 }
-                Console.WriteLine($"RecipeName - {recipeDto.RecName}, RecipeCategory - {recipeDto.Category}, Ingredients - {recipeDto.Ingredients.Values}, " +
-                    $"IngredientCount - {recipeDto.Ingredients}");///// ????????? перебрать foreach обратиться к values чтобы получить доступ к ингред-там
+                Dictionary<int, IngredientAndQuantityDto> ingredientAndQuantityDtos = new (); /// как привязать рецепт к данному экземпляру, сделать поиск с include?
+                Console.WriteLine($"RecipeName - {recipeDto.RecName}, RecipeCategory - {recipeDto.Category.CategName}"); ///// ????????? перебрать foreach обратиться к values чтобы получить доступ к ингред-там
+                foreach (KeyValuePair<int, IngredientAndQuantityDto> ingredientAndQuantityDto in ingredientAndQuantityDtos)
+                {
+                    Console.WriteLine($"{ingredientAndQuantityDto.Value.Ingredient.IngName} - {ingredientAndQuantityDto.Value.QuantityCount}" +
+                        $" {ingredientAndQuantityDto.Value.Ingredient.QuantityType.Name}"); 
+                }
                 /// внутри foreach еще CW выставлять ingname and quantitytype
+                break;
             }
         }
 
@@ -208,7 +216,7 @@ namespace RecipesAndIngredients.Pages
                     Console.WriteLine("Неверный ввод");
                     continue;
                 }
-                bool isExisted = recipeService.CheckExistance(input);
+                bool isExisted = recipeService.CheckExistanceByName(input);
                 if (isExisted == false)
                 {
                     Console.WriteLine("Отмена удаления");
