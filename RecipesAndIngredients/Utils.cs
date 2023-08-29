@@ -68,30 +68,27 @@ namespace RecipesAndIngredients
 
 
 
-        public static string GetAndValidateNullString(string? title)
+        public static string GetAndValidateNullString()
         {
             while (true)
             {
-                if (string.IsNullOrWhiteSpace(title) == false)  /// оператор сравнения bool внутри условия на проверку null
-                {
-                    Console.WriteLine(title);
-                }
                 string? input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input) == true)  /// то же самое что без bool == true
+                if (string.IsNullOrWhiteSpace(input) == true)  /// то же самое что без bool == true (оператор сравнения bool внутри условия на проверку null)
                 {
                     Console.WriteLine("Неверный ввод");
+                    Console.WriteLine("Повторите действие");
                     continue;
                 }
-                return input;
+                return input; /// return работает одновременно как break для цикла и как return для завершения метода(возврат переменной)
             }
         }
 
 
 
-        public static int GetAndValidateNullInt(string? title = null) /// название метода то что отдает(желательно точнее и короче), не писать промежуточные процессы
-            /// если в параметре идет присвоение через = то это означает что будет приниматься дефолтное значение для метода 
+        public static int GetAndValidateNullInt() /// название метода то что отдает(желательно точнее и короче), не писать промежуточные процессы
+            ///string? title = null если в параметре идет присвоение через = то это означает что будет приниматься дефолтное значение для метода 
         {
-            int convertInput = Convert.ToInt32(GetAndValidateNullString(title));
+            int convertInput = Convert.ToInt32(GetAndValidateNullString());
             /// int convertInput = int.Parse(GetAndValidateNullString(title)); то же самое
             return convertInput;
         }

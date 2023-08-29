@@ -110,11 +110,11 @@ namespace RecipesAndIngredients.Services
 
 
 
-        public bool Edit(IngredientDto ingredientDto)
+        public bool UpdateIngredient(IngredientDto ingredientDto)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                Ingredient? ingredient = db.Ingredients.Where(i => i.Id == ingredientDto.Id).FirstOrDefault();
+                Ingredient? ingredient = db.Ingredients.Where(i => i.Id == ingredientDto.Id).FirstOrDefault(); /// исправили вручную чтобы не перезаписывать связующие таблицы (без Include)
                 if (ingredient != null)
                 {
                     ingredient.Id = ingredientDto.Id;
@@ -130,11 +130,11 @@ namespace RecipesAndIngredients.Services
 
 
 
-        public void Remove(int Id)
+        public void Remove(string name)
         {
             using (RecipesIngredientsContext db = new RecipesIngredientsContext())
             {
-                Ingredient? ingredient = GetById(Id);
+                Ingredient? ingredient = GetByName(name);
                 if(ingredient == null)
                 {
                     return;

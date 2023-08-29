@@ -13,7 +13,10 @@ namespace RecipesAndIngredients.DTO
         public string RecName { get; set; } = null!;
 
         public RecipeCategoryDto? Category { get; set; } = new RecipeCategoryDto();
-
+        /// <summary>
+        /// int в dictionary является Id от ингредиента
+        /// </summary>
         public Dictionary<int, IngredientAndQuantityDto> Ingredients { get; set; } = new Dictionary<int, IngredientAndQuantityDto>();
+        
     }
 }

@@ -11,10 +11,5 @@ namespace RecipesAndIngredients.DTO
         public int? QuantityCount { get; set; }
 
         public  IngredientDto Ingredient { get; set; } = null!;
-
-        public static implicit operator Dictionary<object, object>(IngredientAndQuantityDto v)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

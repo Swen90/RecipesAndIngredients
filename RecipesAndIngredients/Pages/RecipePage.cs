@@ -29,8 +29,8 @@ namespace RecipesAndIngredients.Pages
                 Console.WriteLine("4 - Получение информации о рецепте");
                 Console.WriteLine("5 - Удаление рецепта из списка");
                 Console.WriteLine("6 - Вернуться на главную страницу");
-                string? input = Console.ReadLine();
-                int key = Convert.ToInt32(input);
+
+                int key = Utils.GetAndValidateNullInt();
                 switch (key)
                 {
                     case 1:
@@ -67,6 +67,7 @@ namespace RecipesAndIngredients.Pages
         public static void GetAllRecipies(RecipeService recipeService)
         {
             Console.WriteLine("Список всех рецептов");
+
             List<RecipeDto>? recipesDto = recipeService.GetAll();
             foreach(RecipeDto recipeDto in recipesDto)
             {
@@ -79,21 +80,19 @@ namespace RecipesAndIngredients.Pages
         public static void GetRecipe(RecipeService recipeService)
         {
             Console.WriteLine("Введите название рецепта");
-            while (true)
+
+            while (true) /// цикл больше не нужен, он внутри метода, а далее здесь он не используется
             {
-                string? input = Console.ReadLine();
-                if (string.IsNullOrEmpty(input))
-                {
-                    Console.WriteLine("Неверный ввод");
-                    continue;
-                }
-                RecipeDto? recipeDto = recipeService.GetByNameDto(input); 
+                string recName = Utils.GetAndValidateNullString();
+                RecipeDto? recipeDto = recipeService.GetByNameDto(recName); 
                 if (recipeDto == null)
                 {
                     Console.WriteLine("Рецепт не существует");
+                    continue;
                 }
                 Dictionary<int, IngredientAndQuantityDto> ingredientAndQuantityDtos = new (); /// как привязать рецепт к данному экземпляру, сделать поиск с include?
                 Console.WriteLine($"RecipeName - {recipeDto.RecName}, RecipeCategory - {recipeDto.Category.CategName}"); ///// ????????? перебрать foreach обратиться к values чтобы получить доступ к ингред-там
+
                 foreach (KeyValuePair<int, IngredientAndQuantityDto> ingredientAndQuantityDto in ingredientAndQuantityDtos)
                 {
                     Console.WriteLine($"{ingredientAndQuantityDto.Value.Ingredient.IngName} - {ingredientAndQuantityDto.Value.QuantityCount}" +
@@ -110,20 +109,15 @@ namespace RecipesAndIngredients.Pages
         {
             Dictionary<int, IngredientAndQuantityDto> ingredients = new Dictionary<int, IngredientAndQuantityDto>();
             RecipeDto recipeDto = new RecipeDto();
+
             Console.WriteLine("Создание нового рецепта");
-            while (true)
-            {
-                Console.WriteLine("Введите название рецепта");
-                string? inp = Console.ReadLine();
-                if (string.IsNullOrEmpty(inp))
-                {
-                    Console.WriteLine("Неверный формат ввода");
-                    continue;
-                }
-                recipeDto.RecName = inp;
-                break;
-            }
+            Console.WriteLine("Введите название рецепта");
+
+            string recName = Utils.GetAndValidateNullString();
+            recipeDto.RecName = recName;
+
             Console.WriteLine("Выберите одну из категорий блюда");
+
             List<RecipeCategoryDto> categoryList = recipeService.GetAllCategory();
             int countCategory = categoryList.Count;  /// .Count возвращает число записей списка
             for (int i = 1; i <= countCategory; i++)
@@ -131,19 +125,20 @@ namespace RecipesAndIngredients.Pages
                 Console.WriteLine($"{i} - {categoryList[i - 1].CategName}");   /// [] позволяют обращаться по индексу (количество строк)
                     /// обращаясь по индексу порядок начинается с 0, поэтому указываем i - 1  
             }
-            while (true)
+            while (true)  ///////////// переделать на уроке с вопросом о цикле !!!!!!!
             {
                 Console.WriteLine("Введите цифру категории");
+
                 string? input  = Console.ReadLine();
                 if (string.IsNullOrEmpty(input))
                 {
-                    Console.WriteLine("Неверный ввод");
+                    Console.WriteLine("Неверный ввод");///////////////
                     continue;
                 }
                 int inputConv = Convert.ToInt32(input);
                 if (inputConv > countCategory)
                 {
-                    Console.WriteLine("Неверная цифра");
+                    Console.WriteLine("Неверная цифра");////////////
                     continue;
                 }
                 ///RecipeCategoryDto recipeCategoryDto = categoryList[inputConv - 1];
@@ -152,40 +147,35 @@ namespace RecipesAndIngredients.Pages
                 recipeDto.Category = recipeCategoryDto;
                 break;
             }
-
             while (true)
             {
                 Console.WriteLine("Введите название ингредиента");
-                string? inp = Console.ReadLine();
-                if (string.IsNullOrEmpty(inp))
-                {
-                    Console.WriteLine("Неверный формат ввода");
-                    continue;
-                }
-                bool check = ingredientService.CheckExistanceByName(inp);
-                if (check == false)
+
+                string? ingName = Utils.GetAndValidateNullString();
+                if (ingredientService.CheckExistanceByName(ingName) == false)
                 {
                     continue;
                 }
-                IngredientDto? ingredientDto = ingredientService.GetByNameDto(inp);
+                IngredientDto? ingredientDto = ingredientService.GetByNameDto(ingName);
+                if (ingredientDto == null)
+                {
+                    Console.WriteLine("Ингредиент не найден");
+                    continue;
+                }
 
                 Console.WriteLine($"Введите количество ингредиента ({ingredientDto.QuantityType.Name})");
-                string? input = Console.ReadLine();
-                if (string.IsNullOrEmpty(input))
-                {
-                    Console.WriteLine("Неверный ввод количества");
-                    continue;
-                }
-                int quantity = Convert.ToInt32(input);
 
+                int quantity = Utils.GetAndValidateNullInt();
                 IngredientAndQuantityDto ingredientAndQuantityDto = new IngredientAndQuantityDto()
                 {
                     QuantityCount = quantity,
                     Ingredient = ingredientDto,
                 };
                 ingredients.Add(ingredientDto.Id, ingredientAndQuantityDto);
+
                 Console.WriteLine("Желаете ли продолжить добавление ингредиента?");
                 Console.WriteLine("Да - Y   Нет - N");
+
                 ConsoleKey key = Console.ReadKey().Key;
                 if (key == ConsoleKey.Y)
                 {
@@ -195,6 +185,7 @@ namespace RecipesAndIngredients.Pages
                 break;
             }
             recipeService.AddRecipe(recipeDto);
+
             Console.WriteLine("Создан новый рецепт");
             Console.WriteLine($"{recipeDto.RecName}, {recipeDto.Category.CategName}: ");
             foreach(var ingredient in ingredients)
@@ -208,25 +199,16 @@ namespace RecipesAndIngredients.Pages
         public static void RemoveRecipe(RecipeService recipeService)
         {
             Console.WriteLine("Введите название рецепта");
-            while (true)
+
+            string recName = Utils.GetAndValidateNullString();
+            if (recipeService.CheckExistanceByName(recName) == false)
             {
-                string? input = Console.ReadLine();
-                if (string.IsNullOrEmpty(input))
-                {
-                    Console.WriteLine("Неверный ввод");
-                    continue;
-                }
-                bool isExisted = recipeService.CheckExistanceByName(input);
-                if (isExisted == false)
-                {
-                    Console.WriteLine("Отмена удаления");
-                }
-                else
-                {
-                    recipeService.Remove(input);
-                    Console.WriteLine("Ингредиент успешно удален");
-                }
-                break;
+                Console.WriteLine("Отмена удаления");
+            }
+            else
+            {
+                recipeService.Remove(recName);
+                Console.WriteLine("Ингредиент успешно удален");
             }
         }
     }  

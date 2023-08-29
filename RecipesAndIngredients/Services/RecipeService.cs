@@ -97,50 +97,45 @@ namespace RecipesAndIngredients.Services
 
 
 
-        //public bool UpdateRecipe(RecipeDto recipeDto, string name, Dictionary<int, CommandEnum> keyValues)
-        //{
-        //    RecipeIngredient? recipe = GetByName(name);
-        //    using (RecipesIngredientsContext db = new RecipesIngredientsContext())
-        //    {
-        //        recipe.RecName = recipeDto.RecName;
-        //        recipe.RecipeCategoryId = recipeDto.Category.Id;
-        //        Guid recipeId = recipe.Id;
-        //        RecipeDto recipeDto1 = new RecipeDto()
-        //        {
+        public void UpdateRecipe(RecipeDto recipeDto, Dictionary<IngredientAndQuantityDto, CommandEnum> ingredients)
+        {
+            Recipe? recipe = Get(recipeDto.Id);
+            /////// проверку на null
+            
+            using (RecipesIngredientsContext db = new RecipesIngredientsContext())
+            {
+                recipe.RecName = recipeDto.RecName;
+                recipe.RecipeCategoryId = recipeDto.Category.Id;
 
-        //        };
-
-        //        foreach (KeyValuePair<int, RecipeIngredientDto> recipeIngredientDto in recipeDto.Ingredients) /// тип данных dictionary
-        //        {
-
-        //            RecipeIngredient recipeIngredient = recipe.RecipeIngredients.Where((r => r.IngredientId == ingredientId && r.RecipeId == recipeId)); 
-        //            {
-        //                IngredientId = recipeIngredientDto.Key, /// в key находится Id ингредиента
-        //                QuantityCount = recipeIngredientDto.Value.QuantityCount, /// Value обращение к самому значению (второй столбец)
-        //            };
-        //                                                               /// чтобы добавить информацию в БД связанную через FK.
-        //                                                               /// Важно: записи не добавятся пока не будет добавлена основная запись (в нашем случае рецепт)
-        //                                                               /// Как определить какая запись основная - переменная до первой точки (newRecipe)
-        //        }
-        //        switch (keyValues)
-        //        {
-        //            case Dictionary<int, CommandEnum> edit:
-
-        //                break;
-        //            case Dictionary<int, CommandEnum> add:
-
-        //                break;
-        //            case Dictionary<int, CommandEnum> delete:
-
-        //                break;
-        //        }
-        //        db.Update(recipe); 
-        //        var isUpdated = db.Recipes != null;
-        //        db.SaveChanges();
-
-        //        return true;
-        //    }
-        //}
+                foreach (KeyValuePair<IngredientAndQuantityDto, CommandEnum> ingredient in ingredients)
+                {
+                    switch (ingredient.Value)
+                    {
+                        case CommandEnum.Add:
+                            RecipeIngredient recipeIngredient = new RecipeIngredient()
+                            {
+                                RecipeId = recipe.Id,
+                                IngredientId = ingredient.Key.Ingredient.Id,
+                                QuantityCount = ingredient.Key.QuantityCount,
+                            };
+                            recipe.RecipeIngredients.Add(recipeIngredient);
+                            db.Entry(recipeIngredient).State = EntityState.Added; /// явно указывать entity что запись добавлена
+                            break;
+                        case CommandEnum.Edit:
+                            RecipeIngredient? recipeIngredientEdit = recipe.RecipeIngredients.Where(i => i.IngredientId == ingredient.Key.Ingredient.Id).FirstOrDefault();
+                            recipeIngredientEdit.QuantityCount = ingredient.Key.QuantityCount;
+                            db.Update(recipeIngredientEdit);
+                            break;
+                        case CommandEnum.Delete:
+                            RecipeIngredient? recipeIngredientDelete = recipe.RecipeIngredients.Where(i => i.IngredientId == ingredient.Key.Ingredient.Id).FirstOrDefault();
+                            recipe.RecipeIngredients.Remove(recipeIngredientDelete);
+                            break;
+                    }
+                }
+                db.Update(recipe);
+                db.SaveChanges();
+            }
+        }
 
 
         private Recipe? GetByName(string name)

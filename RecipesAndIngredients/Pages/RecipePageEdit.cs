@@ -16,11 +16,12 @@ namespace RecipesAndIngredients.Pages
             RecipeDto? recipeDto = new RecipeDto();
 
             Console.WriteLine("Редактирование рецепта");
-            string recipeName = Utils.GetAndValidateNullString("Введите название");
+            Console.WriteLine("Введите название");
+
+            string recipeName = Utils.GetAndValidateNullString();
             while (true)
             {
-                bool check = recipeService.CheckExistanceByName(recipeName);
-                if (check == false)
+                if (recipeService.CheckExistanceByName(recipeName) == false)
                 {
                     Console.WriteLine($"Рецепт {recipeName} не найден");
                 }
@@ -40,76 +41,47 @@ namespace RecipesAndIngredients.Pages
                 switch (key)
                 {
                     case 1:
-                        while (true)
-                        {
-                            Console.WriteLine("Введите новое название рецепта");
-                            string? inp2 = Console.ReadLine();
-                            if (string.IsNullOrEmpty(inp2))
-                            {
-                                Console.WriteLine("Неверный ввод");
-                                continue;
-                            }
-                            recipeDto.RecName = inp2;
-                            break;
-                        }
-                        break;
+                        Console.WriteLine("Введите новое название рецепта");
+
+                        string recName = Utils.GetAndValidateNullString();
+                        recipeDto.RecName = recName;
+                        continue;
                     case 2:
                         Console.WriteLine("Выберите категорию блюда");
+
                         List<RecipeCategoryDto> categoryList = recipeService.GetAllCategory();
                         int countCategory = categoryList.Count;
-                        for (int i = 1; i <= countCategory; i++)
+                        for (int i = 1; i <= countCategory; i++) /////////// можно вывести в метод, встречается больше 2-х раз
                         {
                             Console.WriteLine($"{i} - {categoryList[i - 1].CategName}");   /// [] позволяют обращаться по индексу (количество строк)
                                                                                            /// обращаясь по индексу порядок начинается с 0, поэтому указываем i - 1  
                         }
-                        while (true)
+                        int newCategory = Utils.GetAndValidateNullInt();
+                        if (newCategory > countCategory)
                         {
-                            string? inp3 = Console.ReadLine();
-                            if (string.IsNullOrEmpty(inp3))
-                            {
-                                Console.WriteLine("Неверный ввод");
-                                continue;
-                            }
-                            int inp3Conv = Convert.ToInt32(inp3);
-                            if (inp3Conv > countCategory)
-                            {
-                                Console.WriteLine("Неверная цифра");
-                                continue;
-                            }
-                            RecipeCategoryDto recipeCategoryDto = categoryList[inp3Conv - 1];
-                            recipeDto.Category = recipeCategoryDto;
-                            break;
+                            Console.WriteLine("Неверная цифра");
+                            continue;
                         }
-                        break;
+                        RecipeCategoryDto recipeCategoryDto = categoryList[newCategory - 1];
+                        recipeDto.Category = recipeCategoryDto;
+                        continue;
                     case 3:
-
                         while (true)
                         {
                             Console.WriteLine("Впишите название ингредиента");
-                            string? inp4 = Console.ReadLine();
-                            if (string.IsNullOrEmpty(inp4))
-                            {
-                                Console.WriteLine("Неверный ввод");
-                                continue;
-                            }
-                            bool check = ingredientService.CheckExistanceByName(inp4);
-                            if (check == false)
-                            {
-                                Console.WriteLine($"Ингредиента с названием {inp4} не существует");
-                                continue;
-                            }
-                            IngredientDto? ingredientDto = ingredientService.GetByNameDto(inp4);
 
+                            string ingName = Utils.GetAndValidateNullString();
+                            if (ingredientService.CheckExistanceByName(ingName) == false)
+                            {
+                                Console.WriteLine($"Ингредиента с названием {ingName} не существует");
+                                continue;
+                            }
+                            IngredientDto? ingredientDto = ingredientService.GetByNameDto(ingName);
                             Console.WriteLine($"{ingredientDto.IngName} - {ingredientDto.QuantityType.Name}");
 
-                            Console.WriteLine($"Впишите количество ({ingredientDto.QuantityType.Name})");
-                            string? quan = Console.ReadLine();
-                            if (string.IsNullOrEmpty(quan))
-                            {
-                                Console.WriteLine("Неверный ввод");
-                            }
-                            int quantity = Convert.ToInt32(quan);
+                            Console.WriteLine($"Впишите количество, ({ingredientDto.QuantityType.Name}:)");
 
+                            int quantity = Utils.GetAndValidateNullInt();
                             IngredientAndQuantityDto ingredientAndQuantityDto = new IngredientAndQuantityDto()
                             {
                                 QuantityCount = quantity,
@@ -119,6 +91,7 @@ namespace RecipesAndIngredients.Pages
 
                             Console.WriteLine("Желаете ли продолжить добавление ингредиента?");
                             Console.WriteLine("Да - Y   Нет - N");
+
                             ConsoleKey key1 = Console.ReadKey().Key;
                             if (key1 == ConsoleKey.Y)
                             {
@@ -132,34 +105,25 @@ namespace RecipesAndIngredients.Pages
                         while (true)
                         {
                             Console.WriteLine("Впишите название ингредиента");
-                            string? inp5 = Console.ReadLine();
-                            if (string.IsNullOrEmpty(inp5))
-                            {
-                                Console.WriteLine("Неверный ввод");
-                                continue;
-                            }
-                            bool check1 = ingredientService.CheckExistanceByName(inp5);
-                            if (check1 == false)
-                            {
-                                Console.WriteLine($"Ингредиента с названием {inp5} не существует");
-                                continue;
-                            }
-                            IngredientDto? ingredientDto1 = ingredientService.GetByNameDto(inp5);
-                            Console.WriteLine($"{ingredientDto1.IngName} - {ingredientDto1.QuantityType.Name}");
 
-                            Console.WriteLine("Введите новое количество ингредиента:");
-                            string? quan1 = Console.ReadLine();
-                            if (string.IsNullOrEmpty(quan1))
+                            string ingName = Utils.GetAndValidateNullString();
+                            if (ingredientService.CheckExistanceByName(ingName) == false)
                             {
-                                Console.WriteLine("Неверный ввод");
+                                Console.WriteLine($"Ингредиента с названием {ingName} не существует");
+                                continue;
                             }
-                            int quantity1 = Convert.ToInt32(quan1);
-                            IngredientAndQuantityDto ingredientAndQuantityDto1 = new IngredientAndQuantityDto()
+                            IngredientDto? ingredientDto = ingredientService.GetByNameDto(ingName);
+                            Console.WriteLine($"{ingredientDto.IngName} - {ingredientDto.QuantityType.Name}");
+                            Console.WriteLine("Введите новое количество ингредиента:");
+
+                            int quantity = Utils.GetAndValidateNullInt();
+                            IngredientAndQuantityDto ingredientAndQuantityDto = new IngredientAndQuantityDto()
                             {
-                                QuantityCount = quantity1,
-                                Ingredient = ingredientDto1
+                                QuantityCount = quantity,
+                                Ingredient = ingredientDto
                             };
-                            ingredients.Add(ingredientAndQuantityDto1, CommandEnum.Edit); /// использовать для сервиса
+                            ingredients.Add(ingredientAndQuantityDto, CommandEnum.Edit); /// использовать для сервиса
+
                             Console.WriteLine("Желаете ли продолжить редактирование ингредиентов?");
                             Console.WriteLine("Да - Y   Нет - N");
                             ConsoleKey key2 = Console.ReadKey().Key;
@@ -174,24 +138,38 @@ namespace RecipesAndIngredients.Pages
                         while (true)
                         {
                             Console.WriteLine("Впишите название ингредиента");
-                            string? inp6 = Console.ReadLine();
-                            if (string.IsNullOrEmpty(inp6))
+
+                            string ingName = Utils.GetAndValidateNullString();
+                            if (ingredientService.CheckExistanceByName(ingName) == false)
                             {
-                                Console.WriteLine("Неверный ввод");
+                                Console.WriteLine($"Ингредиента с названием {ingName} не существует");
                                 continue;
                             }
-                            bool check = ingredientService.CheckExistanceByName(inp6);
-                            if (check == false)
+                            IngredientDto? ingredientDto = ingredientService.GetByNameDto(ingName);
+                            Console.WriteLine($"{ingredientDto.IngName} - {ingredientDto.QuantityType.Name}");
+
+                            IngredientAndQuantityDto ingredientAndQuantityDto = new IngredientAndQuantityDto()
                             {
-                                Console.WriteLine($"Ингредиента с названием {inp6} не существует");
+                                QuantityCount = 0,
+                                Ingredient = ingredientDto
+                            };
+                            ingredients.Add(ingredientAndQuantityDto, CommandEnum.Delete); /// использовать для сервиса
+
+                            Console.WriteLine("Желаете ли продолжить редактирование ингредиентов?");
+                            Console.WriteLine("Да - Y   Нет - N");
+
+                            ConsoleKey key2 = Console.ReadKey().Key;
+                            if (key2 == ConsoleKey.Y)
+                            {
                                 continue;
                             }
-                            IngredientDto? ingredientDto2 = ingredientService.GetByNameDto(inp6);
                             break;
                         }
                         break;
                 }
+                break;
             }
+            recipeService.UpdateRecipe(recipeDto, ingredients);
         }
     }
 }
