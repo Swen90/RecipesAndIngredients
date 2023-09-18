@@ -1,9 +1,4 @@
-﻿using System;
-using RecipesAndIngredients.Pages;
-
-
-
-
+﻿using RecipesAndIngredients.Pages.Main;
 
 namespace RecipesAndIngredients
 {

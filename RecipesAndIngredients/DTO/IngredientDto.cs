@@ -12,7 +12,7 @@ namespace RecipesAndIngredients.DTO
 
         public string IngName { get; set; } = null!;
 
-        public QuantityTypeDto? QuantityType { get; set; } = new QuantityTypeDto();
+        public QuantityTypeDto QuantityType { get; set; } = new QuantityTypeDto();
 
     }
 }

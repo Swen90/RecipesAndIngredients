@@ -5,31 +5,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace RecipesAndIngredients
 {
     public static class Utils
     {
-        public static IngredientDto? ConvertToIngredientDto(Ingredient ingredient)
+        public static IngredientDto ConvertToIngredientDto(Ingredient ingredient)
         {
-            IngredientDto? ingredientDto = new IngredientDto()
+            IngredientDto ingredientDto = new IngredientDto()
             {
                 Id = ingredient.Id,
                 IngName = ingredient.IngName,
-                QuantityType = new QuantityTypeDto
-                {
-                    Id = ingredient.QuantityType.Id,
-                    Name = ingredient.QuantityType.Quantity,
-                }
+                QuantityType = ConvertToQuantityTypeDto(ingredient.QuantityType),
             };
             return ingredientDto;
         }
 
 
 
-        public static QuantityTypeDto? ConvertToQuantityTypeDto(QuantityType quantityType)
+        public static QuantityTypeDto ConvertToQuantityTypeDto(QuantityType quantityType)
         {
-            QuantityTypeDto? quantityTypeDto = new QuantityTypeDto()
+            QuantityTypeDto quantityTypeDto = new QuantityTypeDto()
             {
                 Id = quantityType.Id,
                 Name = quantityType.Quantity,
@@ -39,19 +36,36 @@ namespace RecipesAndIngredients
 
 
 
-        public static RecipeDto? ConvertToRecipeDto(Recipe recipe)
+        public static RecipeDto? ConvertToRecipeDto(Recipe? recipe)
         {
-            RecipeDto? recipeDto = new RecipeDto()
-            {
+            if (recipe == null) return null;
+
+            RecipeDto recipeDto = new RecipeDto() /// только один new должен быть в методе (только создание экзмепляра RecipeDto)
+            { /// разбить все на много маленьких методов, для практики и для правильного написания конструкции кода (принципы solid)
                 Id = recipe.Id,
                 RecName = recipe.RecName,
-                Category = new RecipeCategoryDto
-                {
-                    Id = recipe.RecipeCategoryId.Value,  /// Когда ставлю знак ? добавляется новый функционал, где в свойстве Value хранится значение переменной
-                    CategName = recipe.RecipeCategory.CategName,
-                }
+                Category = ConvertToRecipeCategoryDto(recipe.RecipeCategory)
             };
+
+            foreach (RecipeIngredient recipeIngredient in recipe.RecipeIngredients)
+            {
+                IngredientAndQuantityDto recipeIngredientDto = ConvertToIngredientAndQuantityDto(recipeIngredient);
+                recipeDto.Ingredients.Add(recipeIngredient.IngredientId, recipeIngredientDto);
+            };
+
             return recipeDto;
+        }
+
+
+
+        public static IngredientAndQuantityDto ConvertToIngredientAndQuantityDto(RecipeIngredient recipeIngredient)
+        {
+            IngredientAndQuantityDto ingredientAndQuantityDto = new()
+            {
+                QuantityCount = recipeIngredient.QuantityCount,
+                Ingredient = ConvertToIngredientDto(recipeIngredient.Ingredient),
+            };
+            return ingredientAndQuantityDto;
         }
 
 
@@ -86,11 +100,52 @@ namespace RecipesAndIngredients
 
 
         public static int GetAndValidateNullInt() /// название метода то что отдает(желательно точнее и короче), не писать промежуточные процессы
-            ///string? title = null если в параметре идет присвоение через = то это означает что будет приниматься дефолтное значение для метода 
+                                                  ///string? title = null если в параметре идет присвоение через = то это означает что будет приниматься дефолтное значение для метода 
         {
             int convertInput = Convert.ToInt32(GetAndValidateNullString());
             /// int convertInput = int.Parse(GetAndValidateNullString(title)); то же самое
             return convertInput;
         }
+
+
+
+        ///ConvertToRecipeDto в развернутом варианте
+
+        //public static RecipeDto? ConvertToRecipeDto(Recipe recipe)
+        //{
+        //    if (recipe == null) return null;
+
+        //    RecipeDto recipeDto = new RecipeDto() /// только один new должен быть в методе (только создание экзмепляра RecipeDto)
+        //    { /// разбить все на много маленьких методов, для практики и для правильного написания конструкции кода (принципы solid)
+        //        Id = recipe.Id,
+        //        RecName = recipe.RecName,
+        //        Category = new()
+        //        {
+        //            Id = recipe.RecipeCategory.Id,
+        //            CategName = recipe.RecipeCategory.CategName,
+        //        }
+        //        ///ConvertToRecipeCategoryDto(recipe.RecipeCategory)
+        //    };
+
+        //    foreach (RecipeIngredient recipeIngredient in recipe.RecipeIngredients)
+        //    {
+        //        IngredientAndQuantityDto recipeIngredientDto = new()
+        //        {
+        //            QuantityCount = recipeIngredient.QuantityCount,
+        //            Ingredient = new()
+        //            {
+        //                Id = recipeIngredient.IngredientId,
+        //                IngName = recipeIngredient.Ingredient.IngName,
+        //                QuantityType = new()
+        //                {
+        //                    Id = recipeIngredient.Ingredient.QuantityType.Id,
+        //                    Name = recipeIngredient.Ingredient.QuantityType.Quantity,
+        //                }
+        //            }
+        //        };
+        //        recipeDto.Ingredients.Add(recipeIngredient.IngredientId, recipeIngredientDto);
+        //    };
+        //    return recipeDto;
+        //}
     }
 }

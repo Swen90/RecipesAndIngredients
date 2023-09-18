@@ -8,7 +8,7 @@ namespace RecipesAndIngredients.DTO
 {
     public class RecipeCategoryDto
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         public string? CategName { get; set; }
 
